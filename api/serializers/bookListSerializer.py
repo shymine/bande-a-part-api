@@ -8,6 +8,6 @@ class BookListSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "parution",
-            "author"
+            "authors"
         )
 

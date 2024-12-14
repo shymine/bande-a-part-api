@@ -19,6 +19,10 @@
     - `python manage.py syncdb`
         - will recreate them
 
+- run 'fill_database.py'
+    - `python manage.py shell`
+    - `exec(open("./fill_database.py").read())`
+
 ## Operations point
 
 - doing punctual addition

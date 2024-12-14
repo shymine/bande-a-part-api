@@ -3,7 +3,7 @@ from django.shortcuts import render
 import rest_framework.request
 
 from api.models import Author
-from api.serializers.authorSerializers import AuthorSerializer
+from api.serializers.authorSerializer import AuthorSerializer
 
 from django.views.decorators.csrf import csrf_exempt
 

@@ -1,6 +1,6 @@
 from django.db import models
 
-class BookType(models.Model):
+class Genre(models.Model):
     name = models.CharField(max_length=32)
 
     class Meta:

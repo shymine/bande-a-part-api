@@ -1,4 +1,4 @@
-from api.models import Book, Author, BookType, Editor
+from api.models import Book, Author, Genre, Editor
 from datetime import date
 
 author = Author(
@@ -12,7 +12,7 @@ editor = Editor(
 )
 editor.save()
 
-bookType = BookType(
+bookType = Genre(
     name="sci-fi"
 )
 bookType.save()
@@ -20,7 +20,7 @@ bookType.save()
 print("authors: {}\neditors: {}\nbook types: {}".format(
     Author.objects.all(),
     Editor.objects.all(),
-    BookType.objects.all()
+    Genre.objects.all()
 ))
 
 book = Book(
@@ -35,8 +35,8 @@ book = Book(
     editor=editor
 )
 book.save()
-book.author.add(author)
-book.types.add(bookType)
+book.authors.add(author)
+book.genres.add(bookType)
 
 print("books: {}".format(
     Book.objects.all()

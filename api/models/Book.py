@@ -2,7 +2,7 @@ from django.db import models
 
 from api.models.Author import Author
 from api.models.Editor import Editor
-from api.models.BookType import BookType
+from api.models.Genre import Genre
 
 class Book(models.Model):
     name     = models.CharField(max_length=64)
@@ -14,9 +14,9 @@ class Book(models.Model):
     new      = models.BooleanField()
     note     = models.TextField()
 
-    author   = models.ManyToManyField(Author)
+    authors  = models.ManyToManyField(Author)
     editor   = models.ForeignKey(Editor, on_delete=models.DO_NOTHING)
-    types    = models.ManyToManyField(BookType)
+    genres    = models.ManyToManyField(Genre)
 
     class Meta:
         ordering = ["name"]
