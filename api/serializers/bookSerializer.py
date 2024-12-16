@@ -4,7 +4,7 @@ from api.models.Author import Author
 from api.models.Genre import Genre
 from api.models.Editor import Editor
 
-class BookListSerializer(serializers.ModelSerializer):
+class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = (
@@ -23,7 +23,25 @@ class BookListSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data: any) -> Book:
-        return Book.objects.create(**validated_data)
+        print(validated_data)
+        book = Book(
+            name=validated_data.get("name"),
+            parution=validated_data.get("parution"),
+            price=validated_data.get("price"),
+            synopsis=validated_data.get("synopsis"),
+            ISBN=validated_data.get("ISBN"),
+            stock=validated_data.get("stock"),
+            new=validated_data.get("new"),
+            note=validated_data.get("note"),
+            editor=validated_data.get("editor")
+        )
+        book.save()
+        for auth in validated_data.get("authors"):
+            book.authors.add(auth)
+        for genre in validated_data.get("genres"):
+            book.genres.add(genre)
+        book.save()        
+        return book
     
     def update(self, instance: Book, validated_data: any) -> Book:
         instance.name = validated_data.get("name")
@@ -36,17 +54,17 @@ class BookListSerializer(serializers.ModelSerializer):
         instance.note = validated_data.get("note")
         # TODO: define the elements already in, the elements that need to be removed and the elements to be added
         instance.authors.clear()
-        for author_id in validated_data.get("authors"):
+        for author in validated_data.get("authors"):
             instance.authors.add(
-                Author.objects.get(pk=author_id)
+                author
             )
         if instance.editor.pk != validated_data.get("editor"):
-            instance.editor = Editor.objects.get(pk=validated_data.get("editor"))
+            instance.editor = validated_data.get("editor")
         # TODO same as authors
         instance.genres.clear()
-        for type_id in validated_data.get("genres"):
+        for genre in validated_data.get("genres"):
             instance.genres.add(
-                Genre.objects.get(pk=type_id)
+                genre
             )
         instance.save()
         return instance

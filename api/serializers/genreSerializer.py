@@ -1,19 +1,17 @@
 from rest_framework import serializers
-from api.models import Author
+from api.models import Genre
 
 class GenreSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Author
+        model = Genre
         fields = (
             "id",
-            "name",
-            "surname"
+            "name"
         )
-    def create(self, validated_data: any) -> Author:
-        return Author.objects.create(**validated_data)
+    def create(self, validated_data: any) -> Genre:
+        return Genre.objects.create(**validated_data)
     
-    def update(self, instance: Author, validated_data: any) -> Author:
+    def update(self, instance: Genre, validated_data: any) -> Genre:
         instance.name = validated_data.get("name")
-        instance.surname = validated_data.get("surname")
         instance.save()
         return instance
