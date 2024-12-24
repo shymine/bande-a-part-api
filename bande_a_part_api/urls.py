@@ -18,8 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from api.views import AuthorDetail, AuthorListView, BookDetail, BookListView, EditorDetail, EditorListView, GenreDetail, GenreListView
-from api.views.bookListViews import BookListDetail, BookListListView
+from api.views import LibraryDetail, LibraryListView, BookListDetail, BookListListView, AuthorDetail, AuthorListView, BookDetail, BookListView, EditorDetail, EditorListView, GenreDetail, GenreListView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,6 +37,9 @@ urlpatterns = [
 
     path('bookList/', BookListListView.as_view()),
     path('bookList/<int:pk>/', BookListDetail.as_view()),
+
+    path('library/', LibraryListView.as_view()),
+    path('library/<int:pk>/', LibraryDetail.as_view()),
 
     path('home/', TemplateView.as_view(template_name="home.html"), name="home"),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
