@@ -1,8 +1,5 @@
 from rest_framework import serializers
 from api.models import Book
-from api.models.Author import Author
-from api.models.Genre import Genre
-from api.models.Editor import Editor
 
 class BookSerializer(serializers.ModelSerializer):
     class Meta:
@@ -23,7 +20,6 @@ class BookSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data: any) -> Book:
-        print(validated_data)
         book = Book(
             name=validated_data.get("name"),
             parution=validated_data.get("parution"),
@@ -55,16 +51,12 @@ class BookSerializer(serializers.ModelSerializer):
         # TODO: define the elements already in, the elements that need to be removed and the elements to be added
         instance.authors.clear()
         for author in validated_data.get("authors"):
-            instance.authors.add(
-                author
-            )
+            instance.authors.add(author)
         if instance.editor.pk != validated_data.get("editor"):
             instance.editor = validated_data.get("editor")
         # TODO same as authors
         instance.genres.clear()
         for genre in validated_data.get("genres"):
-            instance.genres.add(
-                genre
-            )
+            instance.genres.add(genre)
         instance.save()
         return instance

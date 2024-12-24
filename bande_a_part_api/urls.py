@@ -19,18 +19,25 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 
 from api.views import AuthorDetail, AuthorListView, BookDetail, BookListView, EditorDetail, EditorListView, GenreDetail, GenreListView
+from api.views.bookListViews import BookListDetail, BookListListView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('author/', AuthorListView.as_view()),
-    path('author/<int:pk>', AuthorDetail.as_view()),
+    path('author/<int:pk>/', AuthorDetail.as_view()),
+
     path('book/', BookListView.as_view()),
-    path('book/<int:pk>', BookDetail.as_view()),
+    path('book/<int:pk>/', BookDetail.as_view()),
+
     path('editor/', EditorListView.as_view()),
-    path('editor/<int:pk>', EditorDetail.as_view()),
+    path('editor/<int:pk>/', EditorDetail.as_view()),
+
     path('genre/', GenreListView.as_view()),
-    path('genre/<int:pk>', GenreDetail.as_view()),
+    path('genre/<int:pk>/', GenreDetail.as_view()),
+
+    path('bookList/', BookListListView.as_view()),
+    path('bookList/<int:pk>/', BookListDetail.as_view()),
 
     path('home/', TemplateView.as_view(template_name="home.html"), name="home"),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
