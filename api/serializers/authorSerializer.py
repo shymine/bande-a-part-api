@@ -13,7 +13,7 @@ class AuthorSerializer(serializers.ModelSerializer):
         return Author.objects.create(**validated_data)
     
     def update(self, instance: Author, validated_data: any) -> Author:
-        instance.name = validated_data.get("name")
+        instance.name    = validated_data.get("name")
         instance.surname = validated_data.get("surname")
         instance.save()
         return instance

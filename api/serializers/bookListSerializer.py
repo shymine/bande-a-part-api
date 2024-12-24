@@ -14,9 +14,9 @@ class BookListSerializer(serializers.ModelSerializer):
     
     def create(self, validated_data: any) -> BookList:
         bookList = BookList(
-            name = validated_data.get("name"),
+            name        = validated_data.get("name"),
             description = validated_data.get("description"),
-            priority = validated_data.get("priority")
+            priority    = validated_data.get("priority")
         )
         bookList.save()
         for book in validated_data.get("books"):
@@ -25,9 +25,9 @@ class BookListSerializer(serializers.ModelSerializer):
         return bookList
     
     def update(self, instance: BookList, validated_data: any) -> BookList:
-        instance.name = validated_data.get("name")
+        instance.name        = validated_data.get("name")
         instance.description = validated_data.get("description")
-        instance.priority = validated_data.get("priority")
+        instance.priority    = validated_data.get("priority")
         
         instance.books.clear()
         for book in validated_data.get("books"):
