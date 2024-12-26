@@ -1,34 +1,42 @@
 package models
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 /*
 The database model for a User's command
 The Books contained in this command may not be up to date as they represent the fixed state at the time of the command
 
 Attributes:
-----------
-date  : Date
 
-	The date of the command
+	id : str
 
-total : int
+		The id of the specific command
 
-	The total price paid
+	date  : Date
 
-user  : User
+		The date of the command
 
-	The User to whom belong this command. Only this user or the admin can see its commands
+	total : int
 
-books : []Book
+		The total price paid
 
-	The Books that are part of the command
+	user  : User
 
-status : CommandStatus
+		The User to whom belong this command. Only this user or the admin can see its commands
 
-	The current status of the command
+	books : []Book
+
+		The Books that are part of the command
+
+	status : CommandStatus
+
+		The current status of the command
 */
 type Command struct {
+	ID     string        `json:"id"`
 	Date   time.Time     `json:"date"`
 	Total  float32       `json:"total"`
 	User   User          `json:"user"`
@@ -62,9 +70,26 @@ REJECTED :
 type CommandStatus string
 
 const (
-	TOAPPROUVE CommandStatus = "to approuve"
+	TOAPPROUVE CommandStatus = "toapprouve"
 	APPROUVED  CommandStatus = "approuved"
 	SHIPPED    CommandStatus = "shipped"
 	RETRIEVED  CommandStatus = "retrieved"
 	REJECTED   CommandStatus = "rejected"
 )
+
+func StringToCommandStatus(elem string) (CommandStatus, error) {
+	switch elem {
+	case "toapprouve":
+		return TOAPPROUVE, nil
+	case "approuved":
+		return APPROUVED, nil
+	case "shipped":
+		return SHIPPED, nil
+	case "retrieved":
+		return RETRIEVED, nil
+	case "rejected":
+		return REJECTED, nil
+	default:
+		return "", errors.New("Wrong string format for Command status: " + elem)
+	}
+}

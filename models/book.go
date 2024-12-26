@@ -31,11 +31,6 @@ stock    : positive int
 
 	The number of remaining books in stock
 
-new      : boolean
-
-	Is this book considered new (if yes, will be put up front in the "New" BookList)
-	After a month new will be put to false
-
 note     : str
 
 	The note of the librarian about this book
@@ -60,9 +55,8 @@ type Book struct {
 	Synopsis     string            `json:"synopsis"`
 	ISBN         string            `json:"isbn"`
 	Stock        uint              `json:"stock"`
-	New          bool              `json:"new"`
-	Note         string            `string:"note"`
-	Contributors []BookContributor `json:"books"`
+	Note         string            `json:"note"`
+	Contributors []BookContributor `json:"contributors"`
 	Editor       Editor            `json:"editor"`
 	Genres       []Genre           `json:"genres"`
 }

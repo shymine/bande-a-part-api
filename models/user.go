@@ -4,25 +4,29 @@ package models
 User contains the informations about a specific user
 
 Attributes:
-----------
 
-email : str
+	id : str
 
-	The contact email of the user
+		The ID associated with the specific user
 
-username: str
+	email : str
 
-	The name used by the user to identify itself
+		The contact email of the user
 
-commands : []Command
+	username: str
 
-	The commands made by the user
+		The name used by the user to identify itself
 
-bookmarks : []Book
+	commands : []Command
 
-	The Book marked by the user for whatever they use it for
+		The commands made by the user
+
+	bookmarks : []Book
+
+		The Book marked by the user for whatever they use it for
 */
 type User struct {
+	ID        string    `json:"id"`
 	Email     string    `json:"email"`
 	Username  string    `json:"username"`
 	Commands  []Command `json:"commands"`

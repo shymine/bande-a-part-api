@@ -6,22 +6,22 @@ The database model of a BookList
 This list can be for promotionnal events, for themed package of books, etc.
 
 Attributes:
-----------
-name        : str
 
-	The name of the book list
+	name        : str
 
-description : str
+		The name of the book list
 
-	A description of this list
+	description : str
 
-priority    : positive int
+		A description of this list
 
-	The priority of this list against the other lists, determine the order they will be displayed
+	priority    : positive int
 
-books       : []Book
+		The priority of this list against the other lists, determine the order they will be displayed
 
-	The books composing the list
+	books       : []Book
+
+		The books composing the list
 */
 type BookList struct {
 	ID          string `json:"id"`
