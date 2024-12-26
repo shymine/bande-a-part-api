@@ -29,6 +29,7 @@ func PostBookList(c *gin.Context) {
 }
 
 // Put a BookList
+// TODO: the Books are coming as the id, create an intermediate representation
 func PutBookList(c *gin.Context) {
 	var incoming models.BookList
 

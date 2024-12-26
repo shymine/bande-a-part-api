@@ -9,7 +9,7 @@ import (
 
 // Get all Command of a User
 func GetCommandByUser(c *gin.Context) {
-	userId := c.Param("id")
+	userId := c.Param("userid")
 
 	for _, a := range Users {
 		if a.ID == userId {
@@ -23,7 +23,7 @@ func GetCommandByUser(c *gin.Context) {
 }
 
 // Get all Command of a certain state
-func GetCommandByState(c *gin.Context) {
+func GetCommandByStatus(c *gin.Context) {
 	stt, err := models.StringToCommandStatus(c.Param("status"))
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
@@ -44,13 +44,26 @@ func GetCommandByState(c *gin.Context) {
 // TODO: Put the date to now and compute the total from the list of book
 // TODO: check the books are valid
 // TODO: compose an intermediate version to handle the addition of total and date
+// TODO: the books of the command use the IDs
+// TODO: the status is not communicated by the client, it is set here as TOAPPROUVE
 func PostCommand(c *gin.Context) {
+	userId := c.Param(("userid"))
 	var command models.Command
 
 	if err := c.BindJSON(&command); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
+
+	var user models.User
+	for _, a := range Users {
+		if a.ID == userId {
+			user = a
+			break
+		}
+	}
+
+	user.Commands = append(user.Commands, command)
 
 	Commands = append(Commands, command)
 	c.IndentedJSON(http.StatusOK, command)
@@ -76,5 +89,14 @@ func DeleteCommand(c *gin.Context) {
 		return
 	}
 	Commands = append(Commands[:index], Commands[index+1:]...)
+
+	for j, user := range Users {
+		for i, a := range user.Commands {
+			if a.ID == element.ID {
+				Users[j].Commands = append(Users[j].Commands[:i], Users[j].Commands[i+1:]...)
+				break
+			}
+		}
+	}
 	c.IndentedJSON(http.StatusOK, element)
 }

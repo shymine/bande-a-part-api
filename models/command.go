@@ -23,10 +23,6 @@ Attributes:
 
 		The total price paid
 
-	user  : User
-
-		The User to whom belong this command. Only this user or the admin can see its commands
-
 	books : []Book
 
 		The Books that are part of the command
@@ -39,7 +35,6 @@ type Command struct {
 	ID     string        `json:"id"`
 	Date   time.Time     `json:"date"`
 	Total  float32       `json:"total"`
-	User   User          `json:"user"`
 	Books  []Book        `json:"books"`
 	Status CommandStatus `json:"status"`
 }

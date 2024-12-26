@@ -22,7 +22,6 @@ func setBooksEP(router *gin.Engine) {
 	router.DELETE("/book/:id", endpoints.DeleteBook)
 }
 
-// TODO: to check with postman
 func setBookListEP(router *gin.Engine) {
 	// Get All BookList
 	router.GET("/bookList", endpoints.GetAllBookList)
@@ -34,14 +33,13 @@ func setBookListEP(router *gin.Engine) {
 	router.DELETE("/bookList/:id", endpoints.DeleteBookList)
 }
 
-// TODO: to check with postman
 func setCommandEP(router *gin.Engine) {
 	// Get All Command of a User (either is admin or ask for a temporary token associated with the user)
-	router.GET("/commandById/:id", endpoints.GetCommandByUser)
+	router.GET("/commandById/:userid", endpoints.GetCommandByUser)
 	// Get All Command of a certain state (is admin)
-	router.GET("/commandByState/:state", endpoints.GetCommandByState)
+	router.GET("/commandByStatus/:status", endpoints.GetCommandByStatus)
 	// Post a Command (Put the date to now and compute the total from the list of book) (raise a message for the admin)
-	router.POST("/command", endpoints.PostCommand)
+	router.POST("/command/:userid", endpoints.PostCommand)
 	// Delete a Command (either is admin, or is the user whom own the command and the command has not yet been approuved)
 	router.DELETE("/command/:id", endpoints.DeleteCommand)
 }
@@ -81,7 +79,6 @@ func setGenreEP(router *gin.Engine) {
 	router.DELETE("/genre/:id", endpoints.DeleteGenre)
 }
 
-// TODO: to check with postman
 func setLibraryEP(router *gin.Engine) {
 	// Get All Library (should be unique)
 	router.GET("/library", endpoints.GetAllLibraries)
@@ -93,7 +90,6 @@ func setLibraryEP(router *gin.Engine) {
 	router.DELETE("/library/:id", endpoints.DeleteLibrary)
 }
 
-// TODO: to check with postman
 func setUserEP(router *gin.Engine) {
 	// Get All User (only if admin)
 	router.GET("/user", endpoints.GetAllUser)
@@ -119,6 +115,7 @@ func setEndPoints(router *gin.Engine) {
 }
 
 func main() {
+	endpoints.UpdateFill()
 	router := gin.Default()
 	setEndPoints(router)
 	router.Run("localhost:8080")

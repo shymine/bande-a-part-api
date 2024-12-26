@@ -80,8 +80,11 @@ var BookLists = []models.BookList{
 
 var Commands = []models.Command{
 	{
-		ID: "203", Date: time.Now(), Total: 55,
-		User: Users[0], Books: []models.Book{Books[2]},
+		ID: "203", Date: time.Now(), Total: 55, Books: []models.Book{Books[2]},
 		Status: models.TOAPPROUVE,
 	},
+}
+
+func UpdateFill() {
+	Users[0].Commands = append(Users[0].Commands, Commands[0])
 }
