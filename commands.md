@@ -51,3 +51,12 @@ docker run --name mongodb -d -p 27017:27017 -v bande-a-part-db:/data/db mongodb/
 ### Docker volumes 
 
 Docker volumes are not necessarily on the path you give, you just give a name and it will be a space handled by docker
+
+# Docker compose
+
+- `docker compose up`
+    - build and launch the docker compose
+- `docker compose start`
+    - start the already build containers
+- `dockerc compose stop`
+    - stop the containers
