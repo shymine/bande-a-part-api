@@ -119,5 +119,6 @@ func main() {
 	database.UpdateFill()
 	router := gin.Default()
 	setEndPoints(router)
-	router.Run("localhost:8080")
+	// 0.0.0.0 => listen to all
+	router.Run("0.0.0.0:8080")
 }
