@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"bande-a-part/database"
 	"bande-a-part/models"
 	"net/http"
 
@@ -9,7 +10,7 @@ import (
 
 // Get all contributors
 func GetAllContributors(c *gin.Context) {
-	contributors := Contributors
+	contributors := database.Contributors
 
 	c.IndentedJSON(http.StatusOK, contributors)
 }
@@ -18,7 +19,7 @@ func GetAllContributors(c *gin.Context) {
 func GetContributorById(c *gin.Context) {
 	id := c.Param("id")
 
-	for _, a := range Contributors {
+	for _, a := range database.Contributors {
 		if a.ID == id {
 			c.IndentedJSON(http.StatusOK, a)
 			return
@@ -36,7 +37,7 @@ func PostContributor(c *gin.Context) {
 		return
 	}
 
-	Contributors = append(Contributors, contributor)
+	database.Contributors = append(database.Contributors, contributor)
 	c.IndentedJSON(http.StatusOK, contributor)
 }
 
@@ -48,9 +49,9 @@ func PutContributor(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
-	for i, a := range Contributors {
+	for i, a := range database.Contributors {
 		if a.ID == incoming.ID {
-			Contributors[i] = incoming
+			database.Contributors[i] = incoming
 			break
 		}
 	}
@@ -64,7 +65,7 @@ func DeleteContributor(c *gin.Context) {
 	var index = -1
 	var element models.Contributor
 
-	for i, a := range Contributors {
+	for i, a := range database.Contributors {
 		if a.ID == id {
 			index = i
 			element = a
@@ -76,6 +77,6 @@ func DeleteContributor(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No Contributo match the id " + id})
 		return
 	}
-	Contributors = append(Contributors[:index], Contributors[index+1:]...)
+	database.Contributors = append(database.Contributors[:index], database.Contributors[index+1:]...)
 	c.IndentedJSON(http.StatusOK, element)
 }

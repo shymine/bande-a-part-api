@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bande-a-part/database"
 	endpoints "bande-a-part/endPoints"
 
 	"github.com/gin-gonic/gin"
@@ -115,7 +116,7 @@ func setEndPoints(router *gin.Engine) {
 }
 
 func main() {
-	endpoints.UpdateFill()
+	database.UpdateFill()
 	router := gin.Default()
 	setEndPoints(router)
 	router.Run("localhost:8080")

@@ -1,6 +1,8 @@
 package endpoints
 
 import (
+	"bande-a-part/database"
+	"bande-a-part/dto"
 	"bande-a-part/models"
 	"net/http"
 
@@ -9,50 +11,62 @@ import (
 
 // Get all user
 func GetAllUser(c *gin.Context) {
-	users := Users
+	users := database.Users
 
-	c.IndentedJSON(http.StatusOK, users)
+	usersDTO := []dto.UserDTO{}
+	for _, u := range users {
+		usersDTO = append(usersDTO, dto.UserToDTO(u))
+	}
+	c.IndentedJSON(http.StatusOK, usersDTO)
 }
 
 // Get User by ID
 func GetUserById(c *gin.Context) {
 	id := c.Param("id")
 
-	for _, a := range Users {
-		if a.ID == id {
-			c.IndentedJSON(http.StatusOK, a)
-			return
-		}
+	user, err := database.FindUserById(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No User with id " + id})
+	c.IndentedJSON(http.StatusOK, dto.UserToDTO(user))
 }
 
 // Post a User
 func PostUser(c *gin.Context) {
-	var user models.User
+	var userDTO dto.UserDTO
 
-	if err := c.BindJSON(&user); err != nil {
+	if err := c.BindJSON(&userDTO); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	Users = append(Users, user)
-	c.IndentedJSON(http.StatusOK, user)
+	user, err := dto.DTOToUser(userDTO)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	}
+	database.Users = append(database.Users, user)
+	c.IndentedJSON(http.StatusOK, userDTO)
 }
 
 // Put a User
 func PutUser(c *gin.Context) {
-	var incoming models.User
+	var incoming dto.UserDTO
 
 	if err := c.BindJSON(&incoming); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	for i, a := range Users {
+	user, err := dto.DTOToUser(incoming)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	}
+
+	for i, a := range database.Users {
 		if a.ID == incoming.ID {
-			Users[i] = incoming
+			database.Users[i] = user
 			break
 		}
 	}
@@ -66,7 +80,7 @@ func DeleteUser(c *gin.Context) {
 	var index = -1
 	var element models.User
 
-	for i, a := range Users {
+	for i, a := range database.Users {
 		if a.ID == id {
 			index = i
 			element = a
@@ -78,6 +92,6 @@ func DeleteUser(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No User match the id " + id})
 		return
 	}
-	Users = append(Users[:index], Users[index+1:]...)
-	c.IndentedJSON(http.StatusOK, element)
+	database.Users = append(database.Users[:index], database.Users[index+1:]...)
+	c.IndentedJSON(http.StatusOK, dto.UserToDTO(element))
 }

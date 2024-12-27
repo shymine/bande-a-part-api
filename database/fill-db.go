@@ -1,7 +1,8 @@
-package endpoints
+package database
 
 import (
 	"bande-a-part/models"
+	"errors"
 	"time"
 )
 
@@ -87,4 +88,77 @@ var Commands = []models.Command{
 
 func UpdateFill() {
 	Users[0].Commands = append(Users[0].Commands, Commands[0])
+}
+
+func FindContributorById(id string) (models.Contributor, error) {
+	for _, c := range Contributors {
+		if c.ID == id {
+			return c, nil
+		}
+	}
+	return models.Contributor{}, errors.New("Contributor not found with id: " + id)
+}
+
+func FindEditorById(id string) (models.Editor, error) {
+	for _, c := range Editors {
+		if c.ID == id {
+			return c, nil
+		}
+	}
+	return models.Editor{}, errors.New("Editor not found with id: " + id)
+}
+
+func FindGenreByName(name string) (models.Genre, error) {
+	for _, c := range Genres {
+		if c.Name == name {
+			return c, nil
+		}
+	}
+	return models.Genre{}, errors.New("Genre not found with name: " + name)
+}
+
+func FindBookById(id string) (models.Book, error) {
+	for _, c := range Books {
+		if c.ID == id {
+			return c, nil
+		}
+	}
+	return models.Book{}, errors.New("Book not found with id: " + id)
+}
+
+func FindCommandById(id string) (models.Command, error) {
+	for _, c := range Commands {
+		if c.ID == id {
+			return c, nil
+		}
+	}
+	return models.Command{}, errors.New("Command not found with id: " + id)
+}
+
+func FindBookListById(id string) (models.BookList, error) {
+	for _, c := range BookLists {
+		if c.ID == id {
+			return c, nil
+		}
+	}
+	return models.BookList{}, errors.New("BookList not found with id: " + id)
+}
+
+func FindUserById(id string) (models.User, error) {
+	for _, c := range Users {
+		if c.ID == id {
+			return c, nil
+		}
+	}
+	return models.User{}, errors.New("User not found with id: " + id)
+}
+
+func FindCommandByStatus(status models.CommandStatus) []models.Command {
+	commands := []models.Command{}
+	for _, c := range Commands {
+		if c.Status == status {
+			commands = append(commands, c)
+		}
+	}
+	return commands
 }

@@ -1,6 +1,8 @@
 package endpoints
 
 import (
+	"bande-a-part/database"
+	"bande-a-part/dto"
 	"bande-a-part/models"
 	"net/http"
 
@@ -11,15 +13,18 @@ import (
 func GetCommandByUser(c *gin.Context) {
 	userId := c.Param("userid")
 
-	for _, a := range Users {
-		if a.ID == userId {
-			c.IndentedJSON(http.StatusOK, a.Commands)
-			return
-		}
+	user, err := database.FindUserById(userId)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No User with id " + userId})
+	commandsDTO := []dto.CommandDTO{}
+	for _, e := range user.Commands {
+		commandsDTO = append(commandsDTO, dto.CommandToDTO(e))
+	}
 
+	c.IndentedJSON(http.StatusOK, commandsDTO)
 }
 
 // Get all Command of a certain state
@@ -30,42 +35,39 @@ func GetCommandByStatus(c *gin.Context) {
 		return
 	}
 
-	var result []models.Command
-	for _, a := range Commands {
-		if stt == a.Status {
-			result = append(result, a)
-		}
+	var result = database.FindCommandByStatus(stt)
+
+	commandsDTO := []dto.CommandDTO{}
+	for _, e := range result {
+		commandsDTO = append(commandsDTO, dto.CommandToDTO(e))
 	}
 
-	c.IndentedJSON(http.StatusOK, result)
+	c.IndentedJSON(http.StatusOK, commandsDTO)
 }
 
 // Post a Command
-// TODO: Put the date to now and compute the total from the list of book
-// TODO: check the books are valid
-// TODO: compose an intermediate version to handle the addition of total and date
-// TODO: the books of the command use the IDs
-// TODO: the status is not communicated by the client, it is set here as TOAPPROUVE
 func PostCommand(c *gin.Context) {
 	userId := c.Param(("userid"))
-	var command models.Command
+	var commandDTO dto.CommandDTOCreated
 
-	if err := c.BindJSON(&command); err != nil {
+	if err := c.BindJSON(&commandDTO); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	var user models.User
-	for _, a := range Users {
-		if a.ID == userId {
-			user = a
-			break
-		}
+	user, err := database.FindUserById(userId)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	}
+
+	command, err := dto.CreatedToCommand(commandDTO)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 	}
 
 	user.Commands = append(user.Commands, command)
 
-	Commands = append(Commands, command)
+	database.Commands = append(database.Commands, command)
 	c.IndentedJSON(http.StatusOK, command)
 }
 
@@ -76,7 +78,7 @@ func DeleteCommand(c *gin.Context) {
 	var index = -1
 	var element models.Command
 
-	for i, a := range Commands {
+	for i, a := range database.Commands {
 		if a.ID == id {
 			index = i
 			element = a
@@ -88,15 +90,15 @@ func DeleteCommand(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No Command match the id " + id})
 		return
 	}
-	Commands = append(Commands[:index], Commands[index+1:]...)
+	database.Commands = append(database.Commands[:index], database.Commands[index+1:]...)
 
-	for j, user := range Users {
+	for j, user := range database.Users {
 		for i, a := range user.Commands {
 			if a.ID == element.ID {
-				Users[j].Commands = append(Users[j].Commands[:i], Users[j].Commands[i+1:]...)
+				database.Users[j].Commands = append(database.Users[j].Commands[:i], database.Users[j].Commands[i+1:]...)
 				break
 			}
 		}
 	}
-	c.IndentedJSON(http.StatusOK, element)
+	c.IndentedJSON(http.StatusOK, dto.CommandToDTO(element))
 }

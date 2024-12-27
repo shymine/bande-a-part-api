@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"bande-a-part/database"
 	"bande-a-part/models"
 	"errors"
 	"net/http"
@@ -10,7 +11,7 @@ import (
 
 // Get All Editor
 func GetAllEditors(c *gin.Context) {
-	editors := Editors
+	editors := database.Editors
 
 	c.IndentedJSON(http.StatusOK, editors)
 }
@@ -24,7 +25,7 @@ func PostEditors(c *gin.Context) {
 		return
 	}
 
-	Editors = append(Editors, editors...)
+	database.Editors = append(database.Editors, editors...)
 	c.IndentedJSON(http.StatusCreated, editors)
 }
 
@@ -46,12 +47,12 @@ func PutEditor(c *gin.Context) {
 		return
 	}
 
-	Editors[index] = incoming
+	database.Editors[index] = incoming
 	c.IndentedJSON(http.StatusOK, incoming)
 }
 
 func getEditorById(id string) (models.Editor, int, error) {
-	for i, a := range Editors {
+	for i, a := range database.Editors {
 		if a.ID == id {
 			return a, i, nil
 		}
@@ -72,6 +73,6 @@ func DeleteEditor(c *gin.Context) {
 		return
 	}
 
-	Editors = append(Editors[:index], Editors[index+1:]...)
+	database.Editors = append(database.Editors[:index], database.Editors[index+1:]...)
 	c.IndentedJSON(http.StatusOK, element)
 }

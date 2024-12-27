@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"bande-a-part/database"
 	"bande-a-part/models"
 	"net/http"
 
@@ -9,7 +10,7 @@ import (
 
 // Get all Genre
 func GetAllGenre(c *gin.Context) {
-	genres := Genres
+	genres := database.Genres
 
 	c.IndentedJSON(http.StatusOK, genres)
 }
@@ -24,7 +25,7 @@ func PostGenre(c *gin.Context) {
 		return
 	}
 
-	Genres = append(Genres, genres...)
+	database.Genres = append(database.Genres, genres...)
 	c.IndentedJSON(http.StatusCreated, genres)
 }
 
@@ -39,9 +40,9 @@ func PutGenre(c *gin.Context) {
 		return
 	}
 
-	for i, a := range Genres {
+	for i, a := range database.Genres {
 		if a.ID == incoming.ID {
-			Genres[i] = incoming
+			database.Genres[i] = incoming
 			break
 		}
 	}
@@ -55,7 +56,7 @@ func DeleteGenre(c *gin.Context) {
 	var index = -1
 	var element models.Genre
 
-	for i, a := range Genres {
+	for i, a := range database.Genres {
 		if a.ID == id {
 			index = i
 			element = a
@@ -67,6 +68,6 @@ func DeleteGenre(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No Genre match the id " + id})
 		return
 	}
-	Genres = append(Genres[:index], Genres[index+1:]...)
+	database.Genres = append(database.Genres[:index], database.Genres[index+1:]...)
 	c.IndentedJSON(http.StatusOK, element)
 }

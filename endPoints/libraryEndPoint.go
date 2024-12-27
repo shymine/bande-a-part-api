@@ -1,6 +1,7 @@
 package endpoints
 
 import (
+	"bande-a-part/database"
 	"bande-a-part/models"
 	"net/http"
 
@@ -9,7 +10,7 @@ import (
 
 // Get All Library
 func GetAllLibraries(c *gin.Context) {
-	libraries := Libraries
+	libraries := database.Libraries
 
 	c.IndentedJSON(http.StatusOK, libraries)
 }
@@ -23,7 +24,7 @@ func PostLibrary(c *gin.Context) {
 		return
 	}
 
-	Libraries = append(Libraries, library...)
+	database.Libraries = append(database.Libraries, library...)
 	c.IndentedJSON(http.StatusOK, library)
 }
 
@@ -36,9 +37,9 @@ func PutLibrary(c *gin.Context) {
 		return
 	}
 
-	for i, a := range Libraries {
+	for i, a := range database.Libraries {
 		if a.ID == incoming.ID {
-			Libraries[i] = incoming
+			database.Libraries[i] = incoming
 			break
 		}
 	}
@@ -52,7 +53,7 @@ func DeleteLibrary(c *gin.Context) {
 	var index = -1
 	var element models.Library
 
-	for i, a := range Libraries {
+	for i, a := range database.Libraries {
 		if a.ID == id {
 			index = i
 			element = a
@@ -64,6 +65,6 @@ func DeleteLibrary(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No Library match the id " + id})
 		return
 	}
-	Libraries = append(Libraries[:index], Libraries[index+1:]...)
+	database.Libraries = append(database.Libraries[:index], database.Libraries[index+1:]...)
 	c.IndentedJSON(http.StatusOK, element)
 }
