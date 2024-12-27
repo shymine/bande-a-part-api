@@ -1,0 +1,11 @@
+services:
+  api:
+    image: bande-a-part-api:latest
+    ports:
+      - "8080:8080"
+  db:
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    volumes:
+      - type: bind
+        source: ./data
+        target: /data/db

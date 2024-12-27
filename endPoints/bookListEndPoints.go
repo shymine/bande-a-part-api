@@ -51,6 +51,7 @@ func PutBookList(c *gin.Context) {
 	bookList, err := dto.DTOToBookList(incoming)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
 	}
 
 	for i, a := range database.BookLists {

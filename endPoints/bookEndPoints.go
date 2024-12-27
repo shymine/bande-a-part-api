@@ -43,7 +43,6 @@ func GetBookByFilter(c *gin.Context) {
 }
 
 // Post a set of Book
-// TODO: The Contributor, Editor and Genre are coming as their id, create an intermediate representations
 func PostBooks(c *gin.Context) {
 	var booksDTO []dto.BookDTO
 
@@ -95,12 +94,21 @@ func DeleteBook(c *gin.Context) {
 	id := c.Param("id")
 
 	var index = -1
-	element, err := database.FindBookById(id)
+	var element models.Book
 
-	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+	for i, a := range database.Books {
+		if a.ID == id {
+			index = i
+			element = a
+			break
+		}
+	}
+
+	if index == -1 {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No Book match the id " + id})
 		return
 	}
+
 	database.Books = append(database.Books[:index], database.Books[index+1:]...)
 
 	elementDTO := dto.BookToDTO(element)
