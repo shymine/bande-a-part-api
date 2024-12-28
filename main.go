@@ -3,8 +3,12 @@ package main
 import (
 	"bande-a-part/database"
 	endpoints "bande-a-part/endPoints"
+	"context"
+	"log"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func setBooksEP(router *gin.Engine) {
@@ -115,10 +119,25 @@ func setEndPoints(router *gin.Engine) {
 	setUserEP(router)
 }
 
+var Collection *mongo.Collection
+var Ctx = context.TODO()
+
 func main() {
 	database.UpdateFill()
 	router := gin.Default()
 	setEndPoints(router)
+
+	clientOptions := options.Client().ApplyURI("mongodb://127.0.0.1:27017/")
+	client, err := mongo.Connect(Ctx, clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = client.Ping(Ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	Collection = client.Database("bande-a-part").Collection("tasks")
+
 	// 0.0.0.0 => listen to all
 	router.Run("0.0.0.0:8080")
 }
