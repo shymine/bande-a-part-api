@@ -1,0 +1,15 @@
+services:
+  api:
+    image: bande-a-part-api:latest
+    container_name: bande-a-part-api
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+  db:
+    image: mongodb/mongodb-community-server:6.0-ubi8
+    container_name: bande-a-part-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./data:/data
