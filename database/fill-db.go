@@ -4,6 +4,8 @@ import (
 	"bande-a-part/models"
 	"errors"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var Contributors = []models.Contributor{
@@ -14,8 +16,8 @@ var Contributors = []models.Contributor{
 }
 
 var Editors = []models.Editor{
-	{ID: "1", Name: "Argyll"},
-	{ID: "2", Name: "1115"},
+	{ID: primitive.NewObjectID(), Name: "Argyll"},
+	{ID: primitive.NewObjectID(), Name: "1115"},
 }
 
 var Libraries = []models.Library{
@@ -99,13 +101,13 @@ func FindContributorById(id string) (models.Contributor, error) {
 	return models.Contributor{}, errors.New("Contributor not found with id: " + id)
 }
 
-func FindEditorById(id string) (models.Editor, error) {
+func FindEditorById(id primitive.ObjectID) (models.Editor, error) {
 	for _, c := range Editors {
 		if c.ID == id {
 			return c, nil
 		}
 	}
-	return models.Editor{}, errors.New("Editor not found with id: " + id)
+	return models.Editor{}, errors.New("Editor not found with id: " + id.String())
 }
 
 func FindGenreByName(name string) (models.Genre, error) {

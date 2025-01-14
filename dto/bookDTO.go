@@ -4,6 +4,8 @@ import (
 	"bande-a-part/database"
 	"bande-a-part/models"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 /*
@@ -20,7 +22,7 @@ type BookDTO struct {
 	Stock        uint                 `json:"stock"`
 	Note         string               `json:"note"`
 	Contributors []BookContributorDTO `json:"contributors"`
-	Editor       string               `json:"editor"`
+	Editor       primitive.ObjectID               `json:"editor"`
 	Genres       []string             `json:"genres"`
 }
 

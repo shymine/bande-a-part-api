@@ -4,14 +4,21 @@ import (
 	"bande-a-part/database"
 	"bande-a-part/models"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Get All Editor
 func GetAllEditors(c *gin.Context) {
-	editors := database.Editors
+	log.Println("new get all editors")
+	editors, err := database.GetEditor()
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error getting the Editors " + err.Error()})
+		return
+	}
 
 	c.IndentedJSON(http.StatusOK, editors)
 }
@@ -25,8 +32,17 @@ func PostEditors(c *gin.Context) {
 		return
 	}
 
-	database.Editors = append(database.Editors, editors...)
-	c.IndentedJSON(http.StatusCreated, editors)
+	res := []models.Editor{}
+	for _, ed := range editors {
+		newEd, newErr := database.CreateEditor(ed)
+		if newErr != nil {
+			log.Println(newErr, " for ", ed)
+		} else {
+			res = append(res, newEd)
+		}
+	}
+	
+	c.IndentedJSON(http.StatusCreated, res)
 }
 
 // Put and Editor
@@ -51,14 +67,16 @@ func PutEditor(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, incoming)
 }
 
-func getEditorById(id string) (models.Editor, int, error) {
+// Get Editor by their ID
+func getEditorById(id primitive.ObjectID) (models.Editor, int, error) {
 	for i, a := range database.Editors {
 		if a.ID == id {
 			return a, i, nil
 		}
 	}
-	return models.Editor{}, 0, errors.New("no Editor found with id: " + id)
+	return models.Editor{}, 0, errors.New("no Editor found with id: " + id.String())
 }
+
 
 // Delete an Editor
 func DeleteEditor(c *gin.Context) {
@@ -67,8 +85,12 @@ func DeleteEditor(c *gin.Context) {
 	var index int
 	var err error
 	var element models.Editor
-
-	if element, index, err = getEditorById(id); err != nil {
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
+	}
+	if element, index, err = getEditorById(objId); err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		return
 	}
