@@ -63,7 +63,7 @@ func setEditorEP(router *gin.Engine) {
 	// Post a set of Editor (must be admin)
 	router.POST("/editor", endpoints.PostEditors)
 	// Put an Editor (must be admin)
-	router.PUT("/editor", endpoints.PutEditor)
+	router.PUT("/editor/:id", endpoints.PutEditor)
 	// Delete an Editor (must be admin)
 	router.DELETE("/editor/:id", endpoints.DeleteEditor)
 }

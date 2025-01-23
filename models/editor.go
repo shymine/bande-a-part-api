@@ -15,5 +15,5 @@ name : str
 */
 type Editor struct {
 	ID   primitive.ObjectID `json:"id" bson:"_id,omitempty"`
-	Name string `json:"name" bson:"name"`
+	Name string             `json:"name" bson:"name"`
 }

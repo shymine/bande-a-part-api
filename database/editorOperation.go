@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func GetEditor() ([]models.Editor, error) {
@@ -27,32 +28,66 @@ func GetEditor() ([]models.Editor, error) {
 	return res, err
 }
 
-func CreateEditor(editor models.Editor) (models.Editor, error) {
-	mEditor, err := bson.Marshal(editor)
-	if err != nil {
-		return models.Editor{}, err
+func CreateMultEditor(editors []models.Editor) ([]models.Editor, error) {
+	mEditors := []any{}
+	corrEditors := []models.Editor{}
+	for _, el := range editors {
+		ed, err := bson.Marshal(el)
+		if err != nil {
+			log.Println("error marshalling editor: ", err)
+		} else {
+			mEditors = append(mEditors, ed)
+			corrEditors = append(corrEditors, el)
+		}
 	}
-
-	_, err = DB_MANAGER.
+	result, err := DB_MANAGER.
 		GetCollection("editor").
-		InsertOne(
+		InsertMany(
 			DB_MANAGER.GetContext(),
-			mEditor,
-	)
+			mEditors,
+		)
 	if err != nil {
-		return models.Editor{}, err
+		return []models.Editor{}, err
 	}
 
-	var newEditor models.Editor
-	err = DB_MANAGER.GetCollection("editor").FindOne(
+	for j, id := range result.InsertedIDs {
+		corrEditors[j].ID = id.(primitive.ObjectID)
+	}
+
+	return corrEditors, nil
+}
+
+/*
+Modify the Editor corresponding to the ID
+filter is of the shape {<field to modify>: <update>}
+*/
+func UpdateEditor(id primitive.ObjectID, update map[string]any) error {
+	updates := bson.D{}
+
+	for k, v := range update {
+		updates = append(
+			updates,
+			bson.E{Key: k, Value: v},
+		)
+	}
+
+	updates = bson.D{{"$set", updates}}
+
+	filter := bson.D{{"_id", id}}
+
+	_, err := DB_MANAGER.GetCollection("editor").UpdateOne(
 		DB_MANAGER.GetContext(),
-		mEditor,
-	).Decode(&newEditor)
-	if err != nil {
-		return models.Editor{}, err
-	}
+		filter,
+		updates,
+	)
+	return err
+}
 
-	log.Println("Create editor", newEditor)
-
-	return newEditor, nil
+func DeleteEditor(id primitive.ObjectID) error {
+	filter := bson.D{{"_id", id}}
+	_, err := DB_MANAGER.GetCollection("editor").DeleteOne(
+		DB_MANAGER.GetContext(),
+		filter,
+	)
+	return err
 }
