@@ -36,20 +36,20 @@ func PostEditors(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error creating the Editors " + newErr.Error()})
 		return
 	}
-	
+
 	c.IndentedJSON(http.StatusCreated, newEd)
 }
 
 /*
-	Put and Editor
-	Modify the Editor corresponding to the ID
-	filter is of the shape {<field to modify>: <update>}
+Put and Editor
+Modify the Editor corresponding to the ID
+filter is of the shape {<field to modify>: <update>}
 */
 func PutEditor(c *gin.Context) {
 	id := c.Param(("id"))
 
-	var filter map[string]any
-	if err := c.BindJSON(&filter); err != nil {
+	var update map[string]any
+	if err := c.BindJSON(&update); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
@@ -60,7 +60,7 @@ func PutEditor(c *gin.Context) {
 		return
 	}
 
-	err = database.UpdateEditor(objId, filter)
+	err = database.UpdateEditor(objId, update)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while updating " + err.Error()})
 		return
@@ -68,9 +68,6 @@ func PutEditor(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, nil)
 }
-
-
-
 
 // Delete an Editor
 func DeleteEditor(c *gin.Context) {

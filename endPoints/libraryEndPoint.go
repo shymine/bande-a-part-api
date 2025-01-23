@@ -6,65 +6,78 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Get All Library
 func GetAllLibraries(c *gin.Context) {
-	libraries := database.Libraries
+	libraries, err := database.GetLibrary()
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error getting the Libraries " + err.Error()})
+		return
+	}
 
 	c.IndentedJSON(http.StatusOK, libraries)
 }
 
 // Post a Library
 func PostLibrary(c *gin.Context) {
-	var library []models.Library
+	var library models.Library
 
 	if err := c.BindJSON(&library); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	database.Libraries = append(database.Libraries, library...)
-	c.IndentedJSON(http.StatusOK, library)
+	newLib, newErr := database.CreateLibrary(library)
+	if newErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error creating the Library " + newErr.Error()})
+		return
+	}
+	c.IndentedJSON(http.StatusOK, newLib)
 }
 
 // Put a Library
 func PutLibrary(c *gin.Context) {
-	var incoming models.Library
+	id := c.Param(("id"))
 
-	if err := c.BindJSON(&incoming); err != nil {
+	var update map[string]any
+	if err := c.BindJSON(&update); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	for i, a := range database.Libraries {
-		if a.ID == incoming.ID {
-			database.Libraries[i] = incoming
-			break
-		}
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
+		return
 	}
-	c.IndentedJSON(http.StatusOK, incoming)
+
+	err = database.UpdateLibrary(objId, update)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while updating " + err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, nil)
 }
 
 // Delete a Library
 func DeleteLibrary(c *gin.Context) {
 	id := c.Param("id")
 
-	var index = -1
-	var element models.Library
-
-	for i, a := range database.Libraries {
-		if a.ID == id {
-			index = i
-			element = a
-			break
-		}
-	}
-
-	if index == -1 {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No Library match the id " + id})
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
 		return
 	}
-	database.Libraries = append(database.Libraries[:index], database.Libraries[index+1:]...)
-	c.IndentedJSON(http.StatusOK, element)
+
+	err = database.DeleteLibrary(objId)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while deleting " + err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, nil)
 }
