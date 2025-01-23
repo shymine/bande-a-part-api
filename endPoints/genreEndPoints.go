@@ -6,11 +6,16 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Get all Genre
 func GetAllGenre(c *gin.Context) {
-	genres := database.Genres
+	genres, err := database.GetGenre()
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error getting the Genre " + err.Error()})
+		return
+	}
 
 	c.IndentedJSON(http.StatusOK, genres)
 }
@@ -25,49 +30,55 @@ func PostGenre(c *gin.Context) {
 		return
 	}
 
-	database.Genres = append(database.Genres, genres...)
-	c.IndentedJSON(http.StatusCreated, genres)
+	newG, newErr := database.CreateMultGenre(genres)
+	if newErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error creating the Editors " + newErr.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusCreated, newG)
 }
 
 // Put a Genre
 // TODO: check if there are close equivalents of the new genre if so, do not modify
 // TODO: check if the ID exist
 func PutGenre(c *gin.Context) {
-	var incoming models.Genre
+	id := c.Param(("id"))
 
-	if err := c.BindJSON(&incoming); err != nil {
+	var update map[string]any
+	if err := c.BindJSON(&update); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	for i, a := range database.Genres {
-		if a.ID == incoming.ID {
-			database.Genres[i] = incoming
-			break
-		}
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
+		return
 	}
-	c.IndentedJSON(http.StatusOK, incoming)
+
+	err = database.UpdateGenre(objId, update)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while updating " + err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, nil)
 }
 
 // Delete a Genre
 func DeleteGenre(c *gin.Context) {
 	id := c.Param("id")
-
-	var index = -1
-	var element models.Genre
-
-	for i, a := range database.Genres {
-		if a.ID == id {
-			index = i
-			element = a
-			break
-		}
-	}
-
-	if index == -1 {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No Genre match the id " + id})
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
 		return
 	}
-	database.Genres = append(database.Genres[:index], database.Genres[index+1:]...)
-	c.IndentedJSON(http.StatusOK, element)
+	err = database.DeleteGenre(objId)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while deleting " + err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, nil)
 }

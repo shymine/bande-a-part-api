@@ -7,16 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Params struct {
-	DbName string `json:"dbName"`
-	Collections []string `json:"collections"`
-}
-
-
-
 func main() {
-	database.UpdateFill()
-	
+	// database.UpdateFill()
+
 	router := gin.Default()
 	SetEndPoints(router)
 	database.SetDBManager("bande-a-part", []string{

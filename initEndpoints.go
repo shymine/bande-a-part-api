@@ -17,7 +17,7 @@ func setBooksEP(router *gin.Engine) {
 	// Post a set of Book (must be admin) (isbn is obtained as a string of size 13)
 	router.POST("/book", endpoints.PostBooks)
 	// Put a Book (must be admin)
-	router.PUT("/book", endpoints.PutBook)
+	router.PUT("/book/:id", endpoints.PutBook)
 	// Delete a Book (must be admin)
 	router.DELETE("/book/:id", endpoints.DeleteBook)
 }
@@ -28,7 +28,7 @@ func setBookListEP(router *gin.Engine) {
 	// Post a BookList (must be admin)
 	router.POST("/bookList", endpoints.PostBookList)
 	// Put a BookList (must be admin)
-	router.PUT("/bookList", endpoints.PutBookList)
+	router.PUT("/bookList/:id", endpoints.PutBookList)
 	// Delete a BookList (must be admin)
 	router.DELETE("/bookList/:id", endpoints.DeleteBookList)
 }
@@ -48,11 +48,11 @@ func setContributorEP(router *gin.Engine) {
 	// Get All Contributor (authors, illustrators, translators)
 	router.GET("/contributor", endpoints.GetAllContributors)
 	// Get Contributor by ID
-	router.GET("/contributor/:id", endpoints.GetContributorById)
+	// router.GET("/contributor/:id", endpoints.GetContributorById)
 	// Post a set of Contributor (must be admin)
 	router.POST("/contributor", endpoints.PostContributor)
 	// Put a Contributor (must be admin)
-	router.PUT("/contributor", endpoints.PutContributor)
+	router.PUT("/contributor/:id", endpoints.PutContributor)
 	// Delete a Contributor (must be admin)
 	router.DELETE("/contributor/:id", endpoints.DeleteContributor)
 }
@@ -74,7 +74,7 @@ func setGenreEP(router *gin.Engine) {
 	// Post a set of Genre (must be admin) (cannot post a genre already pressent in the database)
 	router.POST("/genre", endpoints.PostGenre)
 	// Put a Genre (must be admin) (cannot put a genre already existing in the database)
-	router.PUT("/genre", endpoints.PutGenre)
+	router.PUT("/genre/:id", endpoints.PutGenre)
 	// Delete a Genre (must be admin)
 	router.DELETE("/genre/:id", endpoints.DeleteGenre)
 }
@@ -85,7 +85,7 @@ func setLibraryEP(router *gin.Engine) {
 	// Post a Library (must be admin) (check if address, email, phone exists or null) or if account doesn t already exist vias email
 	router.POST("/library", endpoints.PostLibrary)
 	// Put a Library (must be admin) (check if address, email, phone exists or null)
-	router.PUT("/library", endpoints.PutLibrary)
+	router.PUT("/library/:id", endpoints.PutLibrary)
 	// Delete a Library (must be admin)
 	router.DELETE("/library/:id", endpoints.DeleteLibrary)
 }
@@ -98,7 +98,7 @@ func setUserEP(router *gin.Engine) {
 	// Post a User (check if email exists and username not takken)
 	router.POST("/user", endpoints.PostUser)
 	// Put a User (must be admin, or said user)
-	router.PUT("/user", endpoints.PutUser)
+	router.PUT("/user/:id", endpoints.PutUser)
 	// Delete a User (either is admin or is the user in question, also delete the commands associated with the user and any informations about them)
 	router.DELETE("/user/:id", endpoints.DeleteUser)
 }
@@ -113,4 +113,3 @@ func SetEndPoints(router *gin.Engine) {
 	setLibraryEP(router)
 	setUserEP(router)
 }
-
