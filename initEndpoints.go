@@ -9,7 +9,6 @@ import (
 func setBooksEP(router *gin.Engine) {
 	// Get All Books (for debug purpose)
 	router.GET("/bookAll", endpoints.GetAllBook)
-
 	// Get Book by ID
 	router.GET("/book/:id", endpoints.GetBookById)
 	// Get Book by filter
