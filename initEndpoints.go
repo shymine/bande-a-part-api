@@ -47,8 +47,6 @@ func setCommandEP(router *gin.Engine) {
 func setContributorEP(router *gin.Engine) {
 	// Get All Contributor (authors, illustrators, translators)
 	router.GET("/contributor", endpoints.GetAllContributors)
-	// Get Contributor by ID
-	// router.GET("/contributor/:id", endpoints.GetContributorById)
 	// Post a set of Contributor (must be admin)
 	router.POST("/contributor", endpoints.PostContributor)
 	// Put a Contributor (must be admin)
