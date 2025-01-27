@@ -3,7 +3,6 @@ package endpoints
 import (
 	"bande-a-part/database"
 	"bande-a-part/dto"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,14 +10,13 @@ import (
 )
 
 func GetAllBook(c *gin.Context) {
-	log.Println("new get all editors")
-	editors, err := database.GetAllBooks()
+	books, err := database.GetAllBooks()
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error getting the Books " + err.Error()})
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, editors)
+	c.IndentedJSON(http.StatusOK, books)
 }
 
 // Get a Book by ID

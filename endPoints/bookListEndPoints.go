@@ -3,85 +3,79 @@ package endpoints
 import (
 	"bande-a-part/database"
 	"bande-a-part/dto"
-	"bande-a-part/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Get All BookList
 func GetAllBookList(c *gin.Context) {
-	bookLists := database.BookLists
-
-	bookListDTO := []dto.BookListDTO{}
-	for _, bl := range bookLists {
-		bookListDTO = append(bookListDTO, dto.BookListToDTO(bl))
+	booksList, err := database.GetBookList()
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error getting the BookLists " + err.Error()})
+		return
 	}
 
-	c.IndentedJSON(http.StatusOK, bookListDTO)
+	c.IndentedJSON(http.StatusOK, booksList)
 }
 
 // Post a BookList
 func PostBookList(c *gin.Context) {
-	var bookListDTO dto.BookListDTO
+	var bookList dto.BookListDTO
 
-	if err := c.BindJSON(&bookListDTO); err != nil {
+	if err := c.BindJSON(&bookList); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	bookList, err := dto.DTOToBookList(bookListDTO)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	newB, newErr := database.CreateBookList(bookList)
+	if newErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error creating the Books " + newErr.Error()})
+		return
 	}
 
-	database.BookLists = append(database.BookLists, bookList)
-	c.IndentedJSON(http.StatusOK, bookList)
+	c.IndentedJSON(http.StatusCreated, newB)
 }
 
 // Put a BookList
 func PutBookList(c *gin.Context) {
-	var incoming dto.BookListDTO
+	id := c.Param(("id"))
 
-	if err := c.BindJSON(&incoming); err != nil {
+	var update map[string]any
+	if err := c.BindJSON(&update); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	bookList, err := dto.DTOToBookList(incoming)
+	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
 		return
 	}
 
-	for i, a := range database.BookLists {
-		if a.ID == incoming.ID {
-			database.BookLists[i] = bookList
-			break
-		}
+	err = database.UpdateBookList(objId, update)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while updating " + err.Error()})
+		return
 	}
-	c.IndentedJSON(http.StatusOK, incoming)
+
+	c.IndentedJSON(http.StatusOK, nil)
 }
 
 // Delete a BookList
 func DeleteBookList(c *gin.Context) {
 	id := c.Param("id")
-
-	var index = -1
-	var element models.BookList
-
-	for i, a := range database.BookLists {
-		if a.ID == id {
-			index = i
-			element = a
-			break
-		}
-	}
-
-	if index == -1 {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No BookList match the id " + id})
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
 		return
 	}
-	database.BookLists = append(database.BookLists[:index], database.BookLists[index+1:]...)
-	c.IndentedJSON(http.StatusOK, element)
+	err = database.DeleteBookList(objId)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while deleting " + err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, nil)
 }
