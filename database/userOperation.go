@@ -26,6 +26,9 @@ func GetAllUser() ([]dto.UserDTO, error) {
 	if err != nil {
 		return []dto.UserDTO{}, err
 	}
+	if len(res) == 0 {
+		return []dto.UserDTO{}, nil
+	}
 	return res, err
 }
 

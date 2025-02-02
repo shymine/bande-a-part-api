@@ -24,6 +24,9 @@ func GetBookList() ([]dto.BookListDTO, error) {
 	if err != nil {
 		return []dto.BookListDTO{}, err
 	}
+	if len(res) == 0 {
+		return []dto.BookListDTO{}, nil
+	}
 	return res, err
 }
 

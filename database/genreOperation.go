@@ -26,8 +26,8 @@ func GetGenre() ([]models.Genre, error) {
 		return []models.Genre{}, err
 	}
 
-	if res == nil {
-		res = []models.Genre{}
+	if len(res) == 0 {
+		return []models.Genre{}, nil
 	}
 	return res, err
 }

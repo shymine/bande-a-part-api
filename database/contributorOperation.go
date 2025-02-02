@@ -25,6 +25,9 @@ func GetContributor() ([]models.Contributor, error) {
 	if err != nil {
 		return []models.Contributor{}, err
 	}
+	if len(res) == 0 {
+		return []models.Contributor{}, err
+	}
 	return res, err
 }
 

@@ -25,6 +25,9 @@ func GetLibrary() ([]models.Library, error) {
 	if err != nil {
 		return []models.Library{}, err
 	}
+	if len(res) == 0 {
+		return []models.Library{}, nil
+	}
 	return res, err
 }
 

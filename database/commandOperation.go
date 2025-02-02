@@ -4,7 +4,6 @@ import (
 	"bande-a-part/dto"
 	"bande-a-part/models"
 	"errors"
-	"fmt"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -34,14 +33,14 @@ func GetCommandByUser(userId primitive.ObjectID) ([]dto.CommandDTO, error) {
 			DB_MANAGER.GetContext(),
 			filter,
 		).Decode(&command); err != nil {
-			return []dto.CommandDTO{}, errors.New("a command in user, doesn t exist")
+			return []dto.CommandDTO{}, nil
 		}
 
 		commands = append(commands, command)
 	}
 
 	if len(commands) == 0 {
-		return commands, errors.New("commands are empty but " + fmt.Sprint(len(user.Commands)))
+		return []dto.CommandDTO{}, nil
 	}
 
 	return commands, nil
@@ -65,6 +64,10 @@ func GetCommandByStatus(status models.CommandStatus) ([]dto.CommandDTO, error) {
 	if err != nil {
 		return []dto.CommandDTO{}, err
 	}
+	if len(commands) == 0 {
+		return []dto.CommandDTO{}, nil
+	}
+
 	return commands, nil
 }
 
@@ -120,7 +123,6 @@ func SetCommandStatus(id primitive.ObjectID, statusUpdate models.CommandStatus) 
 	return err
 }
 
-// TODO: when delete, also remove it from the user
 func DeleteCommand(id primitive.ObjectID) error {
 	var user dto.UserDTO
 

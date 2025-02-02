@@ -25,6 +25,9 @@ func GetEditor() ([]models.Editor, error) {
 	if err != nil {
 		return []models.Editor{}, err
 	}
+	if len(res) == 0 {
+		return []models.Editor{}, nil
+	}
 	return res, err
 }
 
