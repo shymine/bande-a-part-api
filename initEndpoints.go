@@ -39,6 +39,10 @@ func setCommandEP(router *gin.Engine) {
 	router.GET("/commandByStatus/:status", endpoints.GetCommandByStatus)
 	// Post a Command (Put the date to now and compute the total from the list of book) (raise a message for the admin)
 	router.POST("/command/:userid", endpoints.PostCommand)
+	// Update the status of a certain command
+	router.PUT("/commandNextStatus/:id", endpoints.CommandNextStatus)
+	// Reject the command
+	router.PUT("/commandReject/:id", endpoints.CommandReject)
 	// Delete a Command (either is admin, or is the user whom own the command and the command has not yet been approuved)
 	router.DELETE("/command/:id", endpoints.DeleteCommand)
 }

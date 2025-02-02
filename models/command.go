@@ -88,3 +88,19 @@ func StringToCommandStatus(elem string) (CommandStatus, error) {
 		return "", errors.New("Wrong string format for Command status: " + elem)
 	}
 }
+
+func NextCommandStatus(status CommandStatus) (CommandStatus, error) {
+	switch status {
+	case TOAPPROUVE:
+		return APPROUVED, nil
+	case APPROUVED:
+		return SHIPPED, nil
+	case SHIPPED:
+		return RETRIEVED, nil
+	case RETRIEVED:
+		return "", errors.New("The command has already been retrieved it is the end of the lifecircle")
+	case REJECTED:
+		return "", errors.New("Commands that are rejected cannot be updated")
+	}
+	return "", nil
+}

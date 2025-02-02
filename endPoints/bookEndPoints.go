@@ -54,7 +54,7 @@ func PostBooks(c *gin.Context) {
 
 	newB, newErr := database.CreateBook(book)
 	if newErr != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error creating the Books " + newErr.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error creating the Book " + newErr.Error()})
 		return
 	}
 

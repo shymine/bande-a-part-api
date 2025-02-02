@@ -5,100 +5,154 @@ import (
 	"bande-a-part/dto"
 	"bande-a-part/models"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Get all Command of a User
 func GetCommandByUser(c *gin.Context) {
-	userId := c.Param("userid")
-
-	user, err := database.FindUserById(userId)
+	id := c.Param("userid")
+	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
 		return
 	}
 
-	commandsDTO := []dto.CommandDTO{}
-	for _, e := range user.Commands {
-		commandsDTO = append(commandsDTO, dto.CommandToDTO(e))
+	commands, err := database.GetCommandByUser(objId)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error getting the Commands " + err.Error()})
+		return
 	}
 
-	c.IndentedJSON(http.StatusOK, commandsDTO)
+	c.IndentedJSON(http.StatusOK, commands)
 }
 
 // Get all Command of a certain state
 func GetCommandByStatus(c *gin.Context) {
-	stt, err := models.StringToCommandStatus(c.Param("status"))
+	status := c.Param("status")
+	cStatus, err := models.StringToCommandStatus(status)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed status " + err.Error()})
 		return
 	}
 
-	var result = database.FindCommandByStatus(stt)
-
-	commandsDTO := []dto.CommandDTO{}
-	for _, e := range result {
-		commandsDTO = append(commandsDTO, dto.CommandToDTO(e))
+	commands, err := database.GetCommandByStatus(cStatus)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error getting the Commands " + err.Error()})
+		return
 	}
 
-	c.IndentedJSON(http.StatusOK, commandsDTO)
+	c.IndentedJSON(http.StatusOK, commands)
 }
 
 // Post a Command
 func PostCommand(c *gin.Context) {
-	userId := c.Param(("userid"))
-	var commandDTO dto.CommandDTOCreated
+	var command dto.CommandDTO
 
-	if err := c.BindJSON(&commandDTO); err != nil {
+	if err := c.BindJSON(&command); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	user, err := database.FindUserById(userId)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	command.Date = time.Now()
+	command.Status = models.TOAPPROUVE
+
+	var bookSum float32 = 0.
+	for _, bookId := range command.Books {
+		book, err := database.GetBookById(bookId)
+		if err != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error getting books from command " + err.Error()})
+			return
+		}
+		bookSum += book.Price
 	}
 
-	command, err := dto.CreatedToCommand(commandDTO)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	command.Total = bookSum
+
+	newC, newErr := database.CreateCommand(command)
+	if newErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error creating the Command " + newErr.Error()})
+		return
 	}
 
-	user.Commands = append(user.Commands, command)
+	userId := c.Param("userid")
+	objId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
+		return
+	}
 
-	database.Commands = append(database.Commands, command)
-	c.IndentedJSON(http.StatusOK, command)
+	err = database.AddCommand(objId, newC.ID)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error adding command to user " + err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusCreated, newC)
+}
+
+func CommandNextStatus(c *gin.Context) {
+	id := c.Param(("id"))
+
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
+		return
+	}
+	command, err := database.GetCommandById(objId)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "No Command with this ID " + err.Error()})
+		return
+	}
+
+	cStatus, err := models.NextCommandStatus(command.Status)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "error getting next command status " + err.Error()})
+		return
+	}
+
+	err = database.SetCommandStatus(objId, cStatus)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "error with updating command status " + err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, nil)
+}
+
+func CommandReject(c *gin.Context) {
+	id := c.Param(("id"))
+
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
+		return
+	}
+
+	err = database.SetCommandStatus(objId, models.REJECTED)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "error with updating command status " + err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, nil)
 }
 
 // Delete a Command
 func DeleteCommand(c *gin.Context) {
 	id := c.Param("id")
-
-	var index = -1
-	var element models.Command
-
-	for i, a := range database.Commands {
-		if a.ID == id {
-			index = i
-			element = a
-			break
-		}
-	}
-
-	if index == -1 {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No Command match the id " + id})
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
 		return
 	}
-	database.Commands = append(database.Commands[:index], database.Commands[index+1:]...)
-
-	for j, user := range database.Users {
-		for i, a := range user.Commands {
-			if a.ID == element.ID {
-				database.Users[j].Commands = append(database.Users[j].Commands[:i], database.Users[j].Commands[i+1:]...)
-				break
-			}
-		}
+	err = database.DeleteCommand(objId)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while deleting " + err.Error()})
+		return
 	}
-	c.IndentedJSON(http.StatusOK, dto.CommandToDTO(element))
+
+	c.IndentedJSON(http.StatusOK, nil)
 }

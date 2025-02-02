@@ -2,7 +2,6 @@ package database
 
 import (
 	"bande-a-part/dto"
-	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -45,7 +44,7 @@ func CreateBook(book dto.BookDTO) (dto.BookDTO, error) {
 
 	mLibrary, err := bson.Marshal(book)
 	if err != nil {
-		log.Println("error marshalling book: ", err)
+		return dto.BookDTO{}, err
 	}
 
 	result, err := DB_MANAGER.
