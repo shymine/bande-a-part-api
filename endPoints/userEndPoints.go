@@ -3,95 +3,99 @@ package endpoints
 import (
 	"bande-a-part/database"
 	"bande-a-part/dto"
-	"bande-a-part/models"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Get all user
 func GetAllUser(c *gin.Context) {
-	users := database.Users
-
-	usersDTO := []dto.UserDTO{}
-	for _, u := range users {
-		usersDTO = append(usersDTO, dto.UserToDTO(u))
+	users, err := database.GetAllUser()
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error getting the Books " + err.Error()})
+		return
 	}
-	c.IndentedJSON(http.StatusOK, usersDTO)
+
+	c.IndentedJSON(http.StatusOK, users)
 }
 
 // Get User by ID
 func GetUserById(c *gin.Context) {
 	id := c.Param("id")
 
-	user, err := database.FindUserById(id)
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
+		return
+	}
+
+	book, err := database.GetUserById(objId)
 	if err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, dto.UserToDTO(user))
+	c.IndentedJSON(http.StatusOK, book)
 }
 
 // Post a User
 func PostUser(c *gin.Context) {
-	var userDTO dto.UserDTO
+	var user dto.UserDTO
 
-	if err := c.BindJSON(&userDTO); err != nil {
+	if err := c.BindJSON(&user); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	user, err := dto.DTOToUser(userDTO)
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+	newB, newErr := database.CreateUser(user)
+	if newErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error creating the User " + newErr.Error()})
+		return
 	}
-	database.Users = append(database.Users, user)
-	c.IndentedJSON(http.StatusOK, userDTO)
+
+	c.IndentedJSON(http.StatusCreated, newB)
 }
 
 // Put a User
+// TODO: cannot modify command or bookmarks, there are specialized functions for that
 func PutUser(c *gin.Context) {
-	var incoming dto.UserDTO
+	id := c.Param(("id"))
 
-	if err := c.BindJSON(&incoming); err != nil {
+	var update map[string]any
+	if err := c.BindJSON(&update); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	user, err := dto.DTOToUser(incoming)
+	objId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
+		return
 	}
 
-	for i, a := range database.Users {
-		if a.ID == incoming.ID {
-			database.Users[i] = user
-			break
-		}
+	err = database.UpdateUser(objId, update)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while updating " + err.Error()})
+		return
 	}
-	c.IndentedJSON(http.StatusOK, incoming)
+
+	c.IndentedJSON(http.StatusOK, nil)
 }
 
 // Delete a User
 func DeleteUser(c *gin.Context) {
 	id := c.Param("id")
-
-	var index = -1
-	var element models.User
-
-	for i, a := range database.Users {
-		if a.ID == id {
-			index = i
-			element = a
-			break
-		}
-	}
-
-	if index == -1 {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "No User match the id " + id})
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
 		return
 	}
-	database.Users = append(database.Users[:index], database.Users[index+1:]...)
-	c.IndentedJSON(http.StatusOK, dto.UserToDTO(element))
+	err = database.DeleteUser(objId)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while deleting " + err.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, nil)
 }
