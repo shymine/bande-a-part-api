@@ -3,15 +3,21 @@ package endpoints
 import (
 	"bande-a-part/database"
 	"bande-a-part/models"
-	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Get All Editor
 func GetAllEditors(c *gin.Context) {
-	editors := database.Editors
+	log.Println("new get all editors")
+	editors, err := database.GetEditor()
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error getting the Editors " + err.Error()})
+		return
+	}
 
 	c.IndentedJSON(http.StatusOK, editors)
 }
@@ -25,54 +31,57 @@ func PostEditors(c *gin.Context) {
 		return
 	}
 
-	database.Editors = append(database.Editors, editors...)
-	c.IndentedJSON(http.StatusCreated, editors)
+	newEd, newErr := database.CreateMultEditor(editors)
+	if newErr != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Error creating the Editors " + newErr.Error()})
+		return
+	}
+
+	c.IndentedJSON(http.StatusCreated, newEd)
 }
 
-// Put and Editor
+/*
+Put and Editor
+Modify the Editor corresponding to the ID
+filter is of the shape {<field to modify>: <update>}
+*/
 func PutEditor(c *gin.Context) {
-	var incoming models.Editor
+	id := c.Param(("id"))
 
-	// var editor models.Editor
-	var index int
-	var err error
-
-	if err := c.BindJSON(&incoming); err != nil {
+	var update map[string]any
+	if err := c.BindJSON(&update); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed JSON " + err.Error()})
 		return
 	}
 
-	if _, index, err = getEditorById(incoming.ID); err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
 		return
 	}
 
-	database.Editors[index] = incoming
-	c.IndentedJSON(http.StatusOK, incoming)
-}
-
-func getEditorById(id string) (models.Editor, int, error) {
-	for i, a := range database.Editors {
-		if a.ID == id {
-			return a, i, nil
-		}
+	err = database.UpdateEditor(objId, update)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while updating " + err.Error()})
+		return
 	}
-	return models.Editor{}, 0, errors.New("no Editor found with id: " + id)
+
+	c.IndentedJSON(http.StatusOK, nil)
 }
 
 // Delete an Editor
 func DeleteEditor(c *gin.Context) {
 	id := c.Param("id")
-
-	var index int
-	var err error
-	var element models.Editor
-
-	if element, index, err = getEditorById(id); err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+	objId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "badly formed ID " + err.Error()})
+		return
+	}
+	err = database.DeleteEditor(objId)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "pb while deleting " + err.Error()})
 		return
 	}
 
-	database.Editors = append(database.Editors[:index], database.Editors[index+1:]...)
-	c.IndentedJSON(http.StatusOK, element)
+	c.IndentedJSON(http.StatusOK, nil)
 }
