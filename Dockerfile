@@ -11,7 +11,6 @@ COPY . ./
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /bande-a-part-api
 
-
 ## Test Stage
 FROM build-stage AS run-test-stage
 RUN go test -v ./...
